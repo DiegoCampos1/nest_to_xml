@@ -1,0 +1,11 @@
+.eslint*
+.git*
+**sonar*
+Dockerfile
+README.md
+
+node_modules
+scripts
+.pre*
+.dockerignore
+**test*
