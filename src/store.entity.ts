@@ -6,24 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 
-// import { Rede } from '../user/rede.entity';
-// import { Rules } from './rules/rules.entity';
-// import { Contact } from './contact/contact.entity';
-// import { PaymentStore } from './payment/paymentStore.entity';
-// import { Restrictions } from './restriction/restriction.entity';
-// import { BlacklistProduct } from './product/blacklistProduct/blacklistProduct.entity';
-// import { OrderLimit } from './product/productStore/orderLimit/orderLimit.entity';
-// import { StockException } from './product/productStore/stockException/stockException.entity';
 import { ProductStore } from './productStore.entity';
-// import { Campaign } from '../marketing/campaign/campaign.entity';
-// import { ProductShowCase } from './product/productShowCase/productShowCase.entity';
-// import { ExclusivePrice } from './product/exclusivePrice/exclusivePrice.entity';
-// import { Banner } from '../marketing/banner/banner.entity';
-// import { ProductList } from './product/productList/productList.entity';
-// import { Coupon } from '../marketing/coupon/coupon.entity';
-// import { Newsletter } from './newsletter/newsletter.entity';
-// import { ClientStore } from '../client/clientStore/clientStore.entity';
-// import { Order } from '../order/order.entity';
 
 export enum Status {
   INACTIVE = 0,
