@@ -1,0 +1,77 @@
+name: Node CI Develop
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+
+    env:
+      STAGE: dev
+      IMAGE: linx-api
+      DB_DEV_PASSWD: ${{ secrets.DB_DEV_PASSWD }}
+      DB_DEV_USER: ${{ secrets.DB_DEV_USER }}
+
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: 12
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+
+      - name: Configure Environment
+        run: |
+          bash scripts/environment.sh > /dev/null
+          # Env Debug
+          cat .env
+        env:
+          DB_PASS: ${{ secrets.DB_DEV_PASSWD }}
+          DB_USER: ${{ secrets.DB_DEV_USER }}
+
+      - name: Setup Repo name and Version build
+        run: |
+          # Get build hash commit for build image tag version
+          echo ${GITHUB_SHA} | sed -r 's/^(.{8}).*/\1/' > BUILD
+
+          # Get name of docker url registry for ECR
+          aws ecr describe-repositories | jq ".repositories[].repositoryUri" -r | grep redesmart-${IMAGE}-${STAGE} > REPO_NAME
+      
+      - name: Build image
+        run: |
+          # Build Docker
+          docker build -t $(cat REPO_NAME):$(cat BUILD) \
+            --build-arg NODE_ENV=development \
+           .
+
+      - name: Push ECR
+        run: |
+          $(aws ecr get-login --no-include-email --region us-east-1)
+          docker tag $(cat REPO_NAME):$(cat BUILD) $(cat REPO_NAME):latest
+          docker push $(cat REPO_NAME):$(cat BUILD)
+          docker push $(cat REPO_NAME):latest
+
+      - name: Deploy ECS service and force new task
+        run: |
+          # ECS variables
+          export ECS_CLUSTER_NAME="redesmart-ecs-cluster-${STAGE}"
+          export ECS_TASK_NAME="redesmart-${IMAGE}-${STAGE}-family"
+          export ECS_SERVICE_NAME="redesmart-${IMAGE}-${STAGE}"
+          # Updating the existing cluster, task, service
+          # Deploy ECS Service
+          aws ecs update-service --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}" --force-new-deployment --region us-east-1 > /dev/null
+
