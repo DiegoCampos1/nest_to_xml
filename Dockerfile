@@ -12,6 +12,8 @@ COPY . .
 RUN \
 yarn build || exit 1
 
+# Produção
+
 FROM node:12-alpine as prod
 WORKDIR /home/node/app
 COPY --from=builder /home/node/app/package*.json /home/node/app/.env ./
