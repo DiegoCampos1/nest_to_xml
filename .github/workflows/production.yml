@@ -1,0 +1,64 @@
+name: Node CI Production
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  deploy-prd:
+    runs-on: ubuntu-latest
+
+    env:
+      STAGE: prod
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - uses: actions/cache@v2
+        name: Cache save
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Run Install
+        run: yarn install --frozen-lockfile
+        env:
+          CI: true
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run Lint
+        run: "yarn lint"
+
+      - name: Set Environment
+        run: mv .env.production .env
+
+      - name: Run Build
+        run: NODE_ENV=production yarn build
+
+      - name: Remove node_modules
+        run: sudo rm -rf node_modules
+
+      - name: Prepare deploy
+        run: |
+          rm -rf node_modules
+          yarn install --production
+
+      - name: Deploy Serverless
+        run: |
+          sed -i -E -e 's/^( +dev):.*$/\1: false/g' serverless.yml
+          sed -i -E -e 's/^( +prod):.*$/\1: true/g' serverless.yml
+          NODE_ENV=production npx serverless deploy --stage ${STAGE}
