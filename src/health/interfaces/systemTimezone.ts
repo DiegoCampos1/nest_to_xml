@@ -1,4 +1,4 @@
-interface SystemTimezone {
-  timezone: string,
-  time: string,
+export interface SystemTimezone {
+  timezone: string;
+  time: string;
 }
