@@ -1,8 +1,8 @@
 import { Controller, Get, Logger, Param } from '@nestjs/common';
-import { AppService } from './app.service';
+import { AppService } from './xml.service';
 import { ProductStore } from './productStore.entity';
 
-@Controller()
+@Controller('xml')
 export class AppController {
   constructor(private readonly appService: AppService) {}
   private readonly logger = new Logger(AppController.name);
