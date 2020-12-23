@@ -1,4 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiStatus } from './interfaces/apiStatus';
+import { SystemTimezone } from './interfaces/systemTimezone';
 
 @Controller('health')
 export class HealthController {
