@@ -1,7 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiStatus } from './interfaces/apiStatus';
 import { SystemTimezone } from './interfaces/systemTimezone';
-
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('Health Logs')
 @Controller('health')
 export class HealthController {
   @Get()
@@ -11,7 +12,7 @@ export class HealthController {
       notes: [
         'Currently this endpoints is useful only to know if the API is running.',
       ],
-      description: 'API to provide smart-frontend with its data needs.',
+      description: 'API to provide products in XML for Linx',
     };
   }
 
