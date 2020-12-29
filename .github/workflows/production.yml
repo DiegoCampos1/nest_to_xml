@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - master
+      - feature/deploy_prd
   pull_request:
     branches:
       - master
+      - feature/deploy_prd
 
 jobs:
   deploy-prd:
