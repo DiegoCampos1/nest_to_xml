@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from '../xml/store.entity';
-import { Stores } from './interfaces/store';
+import { StoreProps } from './interfaces/store';
 
 @Injectable()
 export class StoreService {
@@ -10,7 +10,7 @@ export class StoreService {
     private readonly storeRepository,
   ) {}
 
-  async storeActives(): Promise<Stores[]> {
+  async storeActives(): Promise<StoreProps[]> {
     const qb = await this.storeRepository
       .createQueryBuilder('s')
       .select('s.id', 'id')
