@@ -11,7 +11,7 @@ export class AppService {
     private readonly productStoreRepository,
   ) {}
 
-  async xmlGeneratorProductsByRedeId(storeId: any): Promise<any> {
+  async xmlGeneratorProductsByRedeId(storeId: string): Promise<any> {
     const qb = await this.productStoreRepository
       .createQueryBuilder('ps')
       .innerJoin('stores', 's', 'ps.store_id = s.id')
