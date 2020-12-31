@@ -2,12 +2,24 @@ import { Controller, Get, Logger, Param } from '@nestjs/common';
 import { AppService } from './xml.service';
 import { ProductStore } from './productStore.entity';
 import { ApiTags } from '@nestjs/swagger';
+import { StoreService } from 'src/stores/store.service';
 
 @ApiTags('XML - generator')
 @Controller('xml')
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(
+    private readonly appService: AppService,
+    private readonly storeService: StoreService,
+  ) {}
   private readonly logger = new Logger(AppController.name);
+
+  @Get()
+  async findXmlByAllStores(): Promise<any> {
+    this.logger.debug('findXmlByAllStores');
+    const cozinha = await this.storeService.storeActives();
+    // this.storeService.storeActives();
+    return this.appService.xmlGeneratorProductsAllStores(cozinha);
+  }
 
   @Get('/:redeId')
   async findXMLbyRedeId(

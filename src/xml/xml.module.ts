@@ -3,10 +3,15 @@ import { AppController } from './xml.controller';
 import { AppService } from './xml.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductStore } from './productStore.entity';
+import { StoreService } from 'src/stores/store.service';
+import { Store } from './store.entity';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(), TypeOrmModule.forFeature([ProductStore])],
+  imports: [
+    TypeOrmModule.forRoot(),
+    TypeOrmModule.forFeature([ProductStore, Store]),
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, StoreService],
 })
 export class XmlModule {}
