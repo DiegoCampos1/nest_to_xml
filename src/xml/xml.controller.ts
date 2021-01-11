@@ -16,9 +16,11 @@ export class AppController {
   @Get()
   async findXmlByAllStores(): Promise<any> {
     this.logger.debug('findXmlByAllStores');
-    const cozinha = await this.storeService.storeActives();
+    const storesActiveWithProducts = await this.storeService.storeActives();
     // this.storeService.storeActives();
-    return this.appService.xmlGeneratorProductsAllStores(cozinha);
+    return this.appService.xmlGeneratorProductsAllStores(
+      storesActiveWithProducts,
+    );
   }
 
   @Get('/:redeId')

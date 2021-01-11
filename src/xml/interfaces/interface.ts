@@ -23,4 +23,6 @@ export interface Product {
   stock: string;
   typeStore: number;
   urlStore: string;
+  unidadeVenda: string;
+  quantidadeVenda: number;
 }

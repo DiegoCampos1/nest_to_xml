@@ -11,7 +11,7 @@ export class AppService {
     private readonly productStoreRepository,
   ) {}
 
-  async xmlItemByStoreId(storeId: string | number): Promise<any> {
+  async xmlItemByStoreId(storeId: string | number, storeName): Promise<any> {
     const qb = await this.productStoreRepository
       .createQueryBuilder('ps')
       .innerJoin('stores', 's', 'ps.store_id = s.id')
@@ -61,6 +61,8 @@ export class AppService {
       .addSelect('ps.indaltetq', 'indaltetq')
       .addSelect('ps.ctr', 'ctr')
       .addSelect('ps.desprdloja', 'desprdloja')
+      .addSelect('p.desundvnd', 'unidadeVenda')
+      .addSelect('p.qdemnmmpl', 'quantidadeVenda')
       .andWhere('ps.store_id = :storeId', { storeId })
       .andWhere('ps.status = 1')
       .andWhere('s.type = 1')
@@ -131,6 +133,16 @@ export class AppService {
         'g:brand': `${product.desmrcctl}`,
         'c:tags': {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
+        },
+        'c:specs': {
+          'c:spec_unidade_de_venda': `${product.unidadeVenda}`,
+          'c:spec_multiplo_de_venda': `${
+            product.quantidadeVenda ? product.quantidadeVenda + ' KG' : '-'
+          }`,
+        },
+        'c:details': {
+          'c:detail_name_store': `${storeName}`,
+          'c:detail_id_store': `${storeId}`,
         },
       };
       return itemProduct;
@@ -187,6 +199,10 @@ export class AppService {
       .addSelect('ps.rupture', 'rupture')
       .addSelect('ps.indaltetq', 'indaltetq')
       .addSelect('ps.ctr', 'ctr')
+
+      .addSelect('p.desundvnd', 'unidadeVenda')
+      .addSelect('p.qdemnmmpl', 'quantidadeVenda')
+
       .addSelect('ps.desprdloja', 'desprdloja')
       .andWhere('ps.store_id = :storeId', { storeId })
       .andWhere('ps.status = 1')
@@ -208,6 +224,8 @@ export class AppService {
       .addOrderBy('ps.ctr', 'DESC');
 
     const data = await qb.getRawMany();
+
+    console.log(data[0]);
 
     const productAvaibleStock = (
       rupture: number,
@@ -259,6 +277,12 @@ export class AppService {
         'c:tags': {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
+        'c:specs': {
+          'c:spec_unidade_de_venda': `${product.unidadeVenda}`,
+          'c:spec_multiplo_de_venda': `${
+            product.quantidadeVenda ? product.quantidadeVenda + ' KG' : '-'
+          }`,
+        },
       };
       return itemProduct;
     });
@@ -266,6 +290,7 @@ export class AppService {
     const xmlProductsStore = {
       rss: {
         '@xmlns:g': 'http://base.google.com/ns/1.0',
+        '@xmlns:c': 'http://base.google.com/ns/1.0',
         '@version': '2.0',
         chanel: {
           title: 'Martins store products',
@@ -286,31 +311,32 @@ export class AppService {
     return feed.end({ pretty: true });
   }
 
+  // DEFAULT TODOS OS PRODUTOS //
   async xmlGeneratorProductsAllStores(stores: StoreProps[]): Promise<any> {
     const subChanells = Promise.all(
       stores.map(async (store) => {
-        const SalesChannel = {
-          title: `${store.name}`,
-          link: `https://loja.smartsupermercados.com.br${store.url}`,
-          description: 'This is a Feed with recommended fields',
-          item: await this.xmlItemByStoreId(store.id),
-        };
-        return SalesChannel;
+        const items =
+          //title: `${store.name}`,
+          //link: `https://loja.smartsupermercados.com.br${store.url}`,
+          //description: 'This is a Feed with recommended fields',
+          await this.xmlItemByStoreId(store.id, store.name);
+
+        return items;
       }),
     );
 
     const xmlProductsStore = {
       rss: {
         '@xmlns:g': 'http://base.google.com/ns/1.0',
+        '@xmlns:c': 'http://base.google.com/ns/1.0',
         '@version': '2.0',
-        chanel: {
-          title: 'Martins store products',
-          link: `https://loja.smartsupermercados.com.br`,
-          description: 'This is a Feed with recommended fields',
-          SecretKey: 'YSu8akvfLowFlWDm7phh1Q==',
-          Apikey: 'smartsupermercados',
-          SalesChannel: await subChanells,
-        },
+        item: await subChanells,
+        // chanel: {
+        //   title: 'Martins store products',
+        //   link: `https://loja.smartsupermercados.com.br`,
+        //   description: 'This is a Feed with recommended fields',
+        //   item: await subChanells,
+        // },
       },
     };
 
