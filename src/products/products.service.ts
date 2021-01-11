@@ -64,6 +64,7 @@ export class AppService {
       .addSelect('ps.desprdloja', 'desprdloja')
       .addSelect('p.desundvnd', 'unidadeVenda')
       .addSelect('p.qdemnmmpl', 'quantidadeVenda')
+      .addSelect('p.conversion', 'conversion')
       .andWhere('ps.store_id = :storeId', { storeId })
       .andWhere('ps.status = 1')
       .andWhere('s.type = 1')
@@ -81,8 +82,6 @@ export class AppService {
         'DESC',
       )
       .addOrderBy('p.image', 'DESC')
-
-      .addSelect('p.conversion', 'multiplo')
 
       .addOrderBy('ps.ctr', 'DESC');
 
@@ -143,9 +142,7 @@ export class AppService {
           'c:spec_multiple_sale': `${
             product.quantidadeVenda ? product.quantidadeVenda + ' KG' : '-'
           }`,
-          'c:spec_multiple': `${
-            product.multiplo ? product.quantidadeVenda : '-'
-          }`,
+          'c:spec_multiple': `${product.conversion ? product.conversion : '-'}`,
         },
         'c:details': {
           'c:detail_name_store': `${storeName}`,
@@ -157,6 +154,8 @@ export class AppService {
     return productXmlItem;
   }
 
+  // Endpoint criado mas sem utilidade no momento, caso tenhamos um grande numero de produtos e o arquive gerado fique de um tamanho inviavél.
+  // esse serviço gera um xml por store, recebendo como parametro o storeId:
   async xmlGeneratorProductsByRedeId(storeId: string): Promise<any> {
     const qb = await this.productStoreRepository
       .createQueryBuilder('ps')
@@ -217,7 +216,7 @@ export class AppService {
       .andWhere(
         'NOT EXISTS (SELECT 1 FROM blacklist_product AS bp WHERE bp.store_id = ps.store_id AND (p.id = ANY(bp.products_id) OR (p."CODSECCSM" = bp.code_session  AND p."CODCTGCSM" = bp.code_category AND p."CODSUBCTGCSM" = bp.code_subcategory) OR (p."CODSECCSM" = bp.code_session AND p."CODCTGCSM" = bp.code_category AND bp.code_subcategory IS NULL) OR (p."CODSECCSM" = bp.code_session AND bp.code_category IS NULL AND bp.code_subcategory IS NULL)) AND bp.status = 1 AND (CURRENT_TIMESTAMP BETWEEN bp.start_date AND bp.end_date OR bp.start_date IS NULL))',
       )
-      // A ordenação está identica a ordenação dos produtops em nosso site, mas caso a mesma não seja necessária podemos remover da linha 87 a 97:
+      // A ordenação está identica a ordenação dos produtos em nosso site, mas caso a mesma não seja necessária podemos remover da linha 87 a 97:
       .orderBy('p.name', 'ASC')
       .addOrderBy(
         '(CASE WHEN "p"."image" = 1 AND "ps"."rupture" = 0 AND ("ps"."stock" > 0 OR "ps"."indaltetq" = 1 OR (CASE WHEN (EXISTS (SELECT 1 FROM exception_products ep2 INNER JOIN stock_exception AS se ON (se.id = ep2.stock_exception_id) WHERE (("p"."id" = ANY("ep2"."products_id")) OR ("p"."id" = ep2.product_id) OR (p."CODSECCSM" = ep2."CODSECCSM" AND p."CODCTGCSM" = ep2."CODCTGCSM" AND p."CODSUBCTGCSM" = ep2."CODSUBCTGCSM") OR (p."CODSECCSM" = ep2."CODSECCSM" AND p."CODCTGCSM" = ep2."CODCTGCSM" AND ep2."CODSUBCTGCSM" IS NULL) OR (p."CODSECCSM" = ep2."CODSECCSM" AND ep2."CODCTGCSM" IS NULL AND ep2."CODSUBCTGCSM" IS NULL)) AND ep2.status = 1 AND se.status = 1 AND se.store_id = "s"."id" )) THEN 1 ELSE 0 END) = 1) THEN 1 ELSE 0 END)',
@@ -285,10 +284,17 @@ export class AppService {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
         'c:specs': {
-          'c:spec_unidade_de_venda': `${product.unidadeVenda}`,
-          'c:spec_multiplo_de_venda': `${
+          'c:spec_sales_unit': `${product.unidadeVenda}`,
+          'c:spec_multiple_sale': `${
             product.quantidadeVenda ? product.quantidadeVenda + ' KG' : '-'
           }`,
+          'c:spec_multiple': `${
+            product.conversion ? product.quantidadeVenda : '-'
+          }`,
+        },
+        'c:details': {
+          'c:detail_name_store': `${data[0].urlStore}`,
+          'c:detail_id_store': `${storeId}`,
         },
       };
       return itemProduct;
@@ -303,8 +309,6 @@ export class AppService {
           title: 'Martins store products',
           link: `https://loja.smartsupermercados.com.br${data[0].urlStore}`,
           description: 'This is a Feed with recommended fields',
-          SecretKey: 'YSu8akvfLowFlWDm7phh1Q==',
-          Apikey: 'smartsupermercados',
           item: productXmlItem,
         },
       },
@@ -322,12 +326,7 @@ export class AppService {
   async xmlGeneratorProductsAllStores(stores: StoreProps[]): Promise<any> {
     const subChanells = Promise.all(
       stores.map(async (store) => {
-        const items =
-          //title: `${store.name}`,
-          //link: `https://loja.smartsupermercados.com.br${store.url}`,
-          //description: 'This is a Feed with recommended fields',
-          await this.xmlItemByStoreId(store.id, store.name);
-
+        const items = await this.xmlItemByStoreId(store.id, store.name);
         return items;
       }),
     );
@@ -338,12 +337,6 @@ export class AppService {
         '@xmlns:c': 'http://base.google.com/ns/1.0',
         '@version': '2.0',
         item: await subChanells,
-        // chanel: {
-        //   title: 'Martins store products',
-        //   link: `https://loja.smartsupermercados.com.br`,
-        //   description: 'This is a Feed with recommended fields',
-        //   item: await subChanells,
-        // },
       },
     };
 

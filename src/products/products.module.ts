@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './generate_xml_products.controller';
-import { AppService } from './generate_xml_products.service';
+import { AppController } from './products.controller';
+import { AppService } from './products.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductStore } from './productStore.entity';
 import { StoreService } from 'src/stores/store.service';
