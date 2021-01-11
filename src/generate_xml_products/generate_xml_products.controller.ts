@@ -1,11 +1,11 @@
 import { Controller, Get, Logger, Param } from '@nestjs/common';
-import { AppService } from './xml.service';
+import { AppService } from './generate_xml_products.service';
 import { ProductStore } from './productStore.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { StoreService } from 'src/stores/store.service';
 
 @ApiTags('XML - generator')
-@Controller('xml')
+@Controller('generate_xml_products')
 export class AppController {
   constructor(
     private readonly appService: AppService,

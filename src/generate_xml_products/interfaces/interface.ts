@@ -25,4 +25,5 @@ export interface Product {
   urlStore: string;
   unidadeVenda: string;
   quantidadeVenda: number;
+  multiplo: number;
 }

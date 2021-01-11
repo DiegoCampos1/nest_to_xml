@@ -23,6 +23,7 @@ export class AppService {
       )
       .select('ps.id', 'id')
       .addSelect('ps.stock', 'stock')
+
       .addSelect('p.image', 'image')
       .addSelect('s.url', 'urlStore')
       .addSelect('s.type', 'typeStore')
@@ -80,6 +81,9 @@ export class AppService {
         'DESC',
       )
       .addOrderBy('p.image', 'DESC')
+
+      .addSelect('p.conversion', 'multiplo')
+
       .addOrderBy('ps.ctr', 'DESC');
 
     const data = await qb.getRawMany();
@@ -135,9 +139,12 @@ export class AppService {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
         'c:specs': {
-          'c:spec_unidade_de_venda': `${product.unidadeVenda}`,
-          'c:spec_multiplo_de_venda': `${
+          'c:spec_sales_unit': `${product.unidadeVenda}`,
+          'c:spec_multiple_sale': `${
             product.quantidadeVenda ? product.quantidadeVenda + ' KG' : '-'
+          }`,
+          'c:spec_multiple': `${
+            product.multiplo ? product.quantidadeVenda : '-'
           }`,
         },
         'c:details': {
