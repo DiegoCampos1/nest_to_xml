@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductStore } from './productStore.entity';
 import { StoreService } from 'src/stores/store.service';
 import { Store } from './store.entity';
+import { FileUploadService } from './fileUpload.service';
 
 @Module({
   imports: [
@@ -12,6 +13,6 @@ import { Store } from './store.entity';
     TypeOrmModule.forFeature([ProductStore, Store]),
   ],
   controllers: [AppController],
-  providers: [AppService, StoreService],
+  providers: [AppService, StoreService, FileUploadService],
 })
 export class XmlModule {}
