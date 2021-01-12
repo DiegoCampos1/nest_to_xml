@@ -23,7 +23,7 @@ export interface Product {
   stock: string;
   typeStore: number;
   urlStore: string;
-  unidadeVenda: string;
-  quantidadeVenda: number;
-  conversion: number;
+  salesUnit: string;
+  multipleSale: number;
+  multiple: number;
 }
