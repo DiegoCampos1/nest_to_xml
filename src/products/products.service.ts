@@ -231,8 +231,6 @@ export class AppService {
 
     const data = await qb.getRawMany();
 
-    console.log(data[0]);
-
     const productAvaibleStock = (
       rupture: number,
       stock: string,
