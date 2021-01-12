@@ -23,7 +23,6 @@ export class FileUploadService {
     const params: AWS.S3.PutObjectRequest = {
       Body: Buffer.from(xml, 'utf8'),
       Bucket: AWS_S3_BUCKET_NAME,
-      // Bucket: 'redesmart-linx-store-products-xml',
       Key: `prod/${key}`,
       ContentEncoding: 'base64',
       ContentType: 'text/xml',

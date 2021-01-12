@@ -154,7 +154,7 @@ export class AppService {
     return productXmlItem;
   }
 
-  // Endpoint criado mas sem utilidade no momento, caso tenhamos um grande numero de produtos e o arquivo gerado fique de um tamanho inviavél.
+  // Serviço criado mas sem utilidade no momento, caso tenhamos um grande numero de produtos e o arquivo gerado fique de um tamanho inviavél,
   // esse serviço gera um xml por store, recebendo como parametro o storeId:
   async xmlGeneratorProductsByRedeId(storeId: string): Promise<any> {
     const qb = await this.productStoreRepository
@@ -320,8 +320,8 @@ export class AppService {
 
   // DEFAULT TODOS OS PRODUTOS //
   async xmlGeneratorProductsAllStores(stores: StoreProps[]): Promise<any> {
-    const subChanells = Promise.all(
-      stores.map(async (store) => {
+    const productsFromActivesStores = Promise.all(
+      stores.map(async (store: StoreProps) => {
         const items = await this.xmlItemByStoreId(store.id, store.name);
         return items;
       }),
@@ -332,7 +332,7 @@ export class AppService {
         '@xmlns:g': 'http://base.google.com/ns/1.0',
         '@xmlns:c': 'http://base.google.com/ns/1.0',
         '@version': '2.0',
-        item: await subChanells,
+        item: await productsFromActivesStores,
       },
     };
 
