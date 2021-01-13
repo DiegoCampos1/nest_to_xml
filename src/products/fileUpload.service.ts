@@ -11,6 +11,7 @@ export class FileUploadService {
 
   async uploadXml(xml: any): Promise<Response> {
     const AWS_S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
+    const folder = process.env.AWS_S3_FOLDER;
 
     const s3 = new AWS.S3({
       maxRetries: 10,
@@ -22,9 +23,9 @@ export class FileUploadService {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
       },
     });
-    const key = 'martins_xml_default_prod.xml';
 
-    const folder = process.env.AWS_S3_FOLDER;
+    const key = `martins_xml_default_${folder}.xml`;
+
     const params: AWS.S3.PutObjectRequest = {
       Body: Buffer.from(xml, 'utf8'),
       Bucket: AWS_S3_BUCKET_NAME,
