@@ -17,9 +17,6 @@ jobs:
     env:
       STAGE: prd
       IMAGE: linx-api
-      DB_DEV_PASSWD: ${{ secrets.DB_PRD_PASSWD }}
-      DB_DEV_USER: ${{ secrets.DB_DEV_USER }}
-
 
     steps:
       - uses: actions/checkout@v2
@@ -33,13 +30,13 @@ jobs:
 
 
       - name: Configure Environment
+        env:
+          DB_PASS: ${{ secrets.DB_PRD_PASSWD }}
+          DB_USER: ${{ secrets.DB_DEV_USER }}
         run: |
           bash scripts/environment.sh > /dev/null
           # Env Debug
           cat .env
-        env:
-          DB_PASS: ${{ secrets.DB_PRD_PASSWD }}
-          DB_USER: ${{ secrets.DB_DEV_USER }}
 
       - name: Setup Repo name and Version build
         run: |
