@@ -26,4 +26,5 @@ export interface Product {
   salesUnit: string;
   multipleSale: number;
   multiple: number;
+  salesUnitCode: string;
 }

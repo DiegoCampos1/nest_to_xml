@@ -62,8 +62,9 @@ export class AppService {
       .addSelect('ps.indaltetq', 'indaltetq')
       .addSelect('ps.ctr', 'ctr')
       .addSelect('ps.desprdloja', 'desprdloja')
-      .addSelect('p.desundvnd', 'salesUnit')
+      .addSelect('p.codundvnd', 'salesUnitCode')
       .addSelect('p.qdemnmmpl', 'multipleSale')
+      .addSelect('p.desundvnd', 'salesUnit')
       .addSelect('p.conversion', 'multiple')
       .andWhere('ps.store_id = :storeId', { storeId })
       .andWhere('ps.status = 1')
@@ -138,11 +139,13 @@ export class AppService {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
         'c:specs': {
+          'c:code_product': `${product.codeProduct}`,
+          'c:spec_sales_unit_code': `${product.salesUnitCode}`,
           'c:spec_sales_unit': `${product.salesUnit}`,
-          'c:spec_multiple_sale': `${
-            product.multipleSale ? product.multipleSale + ' KG' : '-'
+          'c:spec_minimum_quantity_multiple': `${
+            product.multipleSale ? product.multipleSale : null
           }`,
-          'c:spec_multiple': `${product.multiple ? product.multiple : '-'}`,
+          'c:spec_conversion': `${product.multiple ? product.multiple : null}`,
         },
         'c:details': {
           'c:detail_name_store': `${storeName}`,
