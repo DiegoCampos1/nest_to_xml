@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 set -ev
-export RDS_DB=$(aws rds describe-db-instances --query "DBInstances[*].Endpoint.Address" | grep redesmart-rdsdb-dev | cut -d '"' -f2)
+export RDS_DB=$(aws rds describe-db-instances --query "DBInstances[*].Endpoint.Address" | grep redesmart-rdsdb-$STAGE | cut -d '"' -f2)
 export DB_PASSWD=$DB_PASS
 export RDS_USER=$DB_USER
 
@@ -17,4 +17,5 @@ TYPEORM_SYNCHRONIZE=false
 TYPEORM_LOGGING=true
 TYPEORM_ENTITIES=dist/**/*.entity.js
 AWS_S3_FOLDER=$STAGE
+AWS_S3_BUCKET_NAME=redesmart-linx-store-products-xml
 EOF
