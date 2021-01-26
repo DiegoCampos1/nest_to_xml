@@ -11,6 +11,6 @@ export class StoreController {
   @Get()
   async findStoreActives() {
     this.logger.debug('findStoresActives');
-    return this.storeService.storeActives();
+    return this.storeService.getActiveStores();
   }
 }

@@ -10,6 +10,13 @@ export class FileUploadService {
   private readonly logger: Logger = new Logger(FileUploadService.name);
 
   async uploadXml(xml: any): Promise<Response> {
+    console.log('uploadXml called');
+    console.time('uploadXml');
+
+    console.log(
+      `Memory Usage: uploadXml MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
     const AWS_S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
     const folder = process.env.AWS_S3_FOLDER;
 
@@ -19,16 +26,18 @@ export class FileUploadService {
         base: 150,
       },
       params: { AWS_S3_BUCKET_NAME },
-      // credentials: {
-      //   accessKeyId: process.env.AWS_ACCESS_ID,
-      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      // },
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
     });
 
     const key = `martins_xml_default_${folder}.xml`;
 
     const params: S3.PutObjectRequest = {
       Body: Buffer.from(xml, 'utf8'),
+      // Body: xml,
+
       Bucket: AWS_S3_BUCKET_NAME,
       // ideal ser dinamico o nome da pasta por ambiente
 
@@ -52,6 +61,11 @@ export class FileUploadService {
           success: true,
           message: `Arquivo salvo com sucesso: ${key}`,
         };
+        console.log(
+          `Memory Usage: uploadXml MB`,
+          (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+        );
+        console.timeEnd('uploadXml');
         return resolve(response);
       });
     });

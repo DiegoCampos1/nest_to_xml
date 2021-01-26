@@ -9,8 +9,11 @@ export class StoreService {
     @InjectRepository(Store)
     private readonly storeRepository,
   ) {}
+  // getActiveStores
+  async getActiveStores(): Promise<StoreProps[]> {
+    console.log('getActiveStores called');
+    console.time('storeActives');
 
-  async storeActives(): Promise<StoreProps[]> {
     const qb = await this.storeRepository
       .createQueryBuilder('s')
       .select('s.id', 'id')
@@ -23,7 +26,11 @@ export class StoreService {
       )
       .orderBy('s.id', 'ASC');
     const data = await qb.getRawMany();
-
+    console.log(
+      `Memory Usage: storeActives MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('storeActives');
     return data;
   }
 }

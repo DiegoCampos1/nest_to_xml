@@ -18,12 +18,20 @@ export class AppController {
   async findXmlByAllStores(): Promise<any> {
     this.logger.debug('findXmlByAllStores');
 
-    const storesActiveWithProducts = await this.storeService.storeActives();
+    const timer = setInterval(() => {
+      console.log(
+        `Memory Usage: setInterval MB`,
+        (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+      );
+    }, 500);
+
+    const storesActiveWithProducts = await this.storeService.getActiveStores();
 
     const productsXml = await this.appService.xmlGeneratorProductsAllStores(
       storesActiveWithProducts,
     );
 
+    clearInterval(timer);
     return this.fileUploadService.uploadXml(productsXml);
   }
 

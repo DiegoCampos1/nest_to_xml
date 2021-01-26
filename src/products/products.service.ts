@@ -4,6 +4,8 @@ import * as builder from 'xmlbuilder';
 import { Product } from './interfaces/products';
 import { ProductStore } from './productStore.entity';
 import { StoreProps } from 'src/stores/interfaces/store';
+import * as fs from 'fs';
+import * as path from 'path';
 @Injectable()
 export class AppService {
   constructor(
@@ -12,6 +14,7 @@ export class AppService {
   ) {}
 
   async xmlItemByStoreId(storeId: string | number, storeName): Promise<any> {
+    console.log('xmlItemByStoreId called');
     const qb = await this.productStoreRepository
       .createQueryBuilder('ps')
       .innerJoin('stores', 's', 'ps.store_id = s.id')
@@ -296,6 +299,7 @@ export class AppService {
           'c:detail_id_store': `${storeId}`,
         },
       };
+
       return itemProduct;
     });
 
@@ -323,13 +327,25 @@ export class AppService {
 
   // DEFAULT TODOS OS PRODUTOS //
   async xmlGeneratorProductsAllStores(stores: StoreProps[]): Promise<any> {
+    console.log('xmlGeneratorProductsAllStores called');
+    console.time('productsFromActivesStores');
     const productsFromActivesStores = Promise.all(
       stores.map(async (store: StoreProps) => {
         const items = await this.xmlItemByStoreId(store.id, store.name);
+        console.log(
+          `Memory Usage: Map productsFromActivesStores MB`,
+          (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+        );
         return items;
       }),
     );
+    console.log(
+      `Memory Usage: productsFromActivesStores MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('productsFromActivesStores');
 
+    console.time('xmlProductsStore');
     const xmlProductsStore = {
       rss: {
         '@xmlns:g': 'http://base.google.com/ns/1.0',
@@ -338,12 +354,50 @@ export class AppService {
         item: await productsFromActivesStores,
       },
     };
+    console.log(
+      `Memory Usage: xmlProductsStore MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('xmlProductsStore');
+
+    // const filePath = path.resolve(__dirname, './xmlAllProducts');
+    // console.log('filePath', filePath);
+    // const stream = fs.createWriteStream(filePath);
+
+    // stream.once('open', function (fd) {
+    //   builder
+    //     .begin(function (chunk) {
+    //       stream.write(chunk);
+    //     })
+    //     .dec('1.0', 'utf-8', true)
+    //     //.ele('xmlbuilder')
+    //     .ele(xmlProductsStore)
+    //     //.up()
+    //     .end();
+    //   stream.end();
+    // });
+    console.time('feed');
 
     const feed = builder.create(xmlProductsStore, {
       encoding: 'utf-8',
       standalone: true,
     });
 
-    return feed.end({ pretty: true });
+    console.log(
+      `Memory Usage: feed MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('feed');
+
+    console.log('feedEndPretty');
+    console.time('feedEndPretty');
+    const feedEndPretty = feed.end({ pretty: false });
+    console.log(
+      `Memory Usage: feedEndPretty MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('feedEndPretty');
+
+    return feedEndPretty;
   }
 }
