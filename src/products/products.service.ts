@@ -6,6 +6,7 @@ import { ProductStore } from './productStore.entity';
 import { StoreProps } from 'src/stores/interfaces/store';
 import * as fs from 'fs';
 import * as path from 'path';
+import { truncate } from 'fs/promises';
 @Injectable()
 export class AppService {
   constructor(
@@ -216,6 +217,7 @@ export class AppService {
       .addSelect('p.qdemnmmpl', 'multipleSale')
 
       .addSelect('ps.desprdloja', 'desprdloja')
+      //filtro por loja
       .andWhere('ps.store_id = :storeId', { storeId })
       .andWhere('ps.status = 1')
       .andWhere('s.type = 1')
@@ -326,18 +328,21 @@ export class AppService {
   }
 
   // DEFAULT TODOS OS PRODUTOS //
-  async xmlGeneratorProductsAllStores(stores: StoreProps[]): Promise<any> {
-    console.log('xmlGeneratorProductsAllStores called');
+  async xmlGeneratorProductsAllStores(mockUmuaramaDias): Promise<any> {
     console.time('productsFromActivesStores');
-    const productsFromActivesStores = Promise.all(
-      stores.map(async (store: StoreProps) => {
-        const items = await this.xmlItemByStoreId(store.id, store.name);
-        console.log(
-          `Memory Usage: Map productsFromActivesStores MB`,
-          (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
-        );
-        return items;
-      }),
+    // const productsFromActivesStores = Promise.all(
+    //   stores.map(async (store: StoreProps) => {
+    //     const items = await this.xmlItemByStoreId(store.id, store.name);
+    //     console.log(
+    //       `Memory Usage: Map productsFromActivesStores MB`,
+    //       (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    //     );
+    //     return items;
+    //   }),
+    // );
+    const productsFromActivesStores = await this.xmlItemByStoreId(
+      mockUmuaramaDias.id,
+      mockUmuaramaDias.name,
     );
     console.log(
       `Memory Usage: productsFromActivesStores MB`,
@@ -360,22 +365,33 @@ export class AppService {
     );
     console.timeEnd('xmlProductsStore');
 
-    // const filePath = path.resolve(__dirname, './xmlAllProducts');
+    // const filePath = path.resolve(
+    //   __dirname,
+    //   `martins_xml_default_${process.env.AWS_S3_FOLDER}.xml`,
+    // );
     // console.log('filePath', filePath);
     // const stream = fs.createWriteStream(filePath);
 
-    // stream.once('open', function (fd) {
-    //   builder
-    //     .begin(function (chunk) {
-    //       stream.write(chunk);
-    //     })
-    //     .dec('1.0', 'utf-8', true)
-    //     //.ele('xmlbuilder')
-    //     .ele(xmlProductsStore)
-    //     //.up()
-    //     .end();
-    //   stream.end();
+    // return new Promise((res, rej) => {
+    //   stream.once('open', function (fd) {
+    //     builder
+    //       .begin(function (chunk) {
+    //         stream.write(chunk);
+    //       })
+    //       .dec('1.0', 'utf-8', true)
+    //       //.ele('xmlbuilder')
+    //       .ele(xmlProductsStore)
+    //       //.up()
+    //       .end();
+    //     stream.end();
+    //     console.log(
+    //       `Memory Usage: Salve file MB`,
+    //       (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    //     );
+    //     res(filePath);
+    //   });
     // });
+
     console.time('feed');
 
     const feed = builder.create(xmlProductsStore, {

@@ -13,4 +13,15 @@ export class StoreController {
     this.logger.debug('findStoresActives');
     return this.storeService.getActiveStores();
   }
+
+  // stores/:idStore/products/xml;
+  // recebendo apenas o id;
+  // @Put(); talvez Header: Content-Length: 0 -- NO SYNC
+  // this.storeService.generateXmlForProducts(storeId);
+  // const store = this.storeRepository.findById(idStore);
+  // if(!store)throw new Exception(404, "Loja não encontrada")
+  // if(!store.active || !store.type...) throw new Exception(400, "Loja inativa")
+  // this.productService.generateXmlForProducts(store)
+
+  // incluir no product -- if(products.length === 0) throw new Exception(404, "No products for store")
 }

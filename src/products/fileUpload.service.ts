@@ -9,7 +9,7 @@ interface Response {
 export class FileUploadService {
   private readonly logger: Logger = new Logger(FileUploadService.name);
 
-  async uploadXml(xml: any): Promise<Response> {
+  async uploadXml(xml: any, id): Promise<Response> {
     console.log('uploadXml called');
     console.time('uploadXml');
 
@@ -32,7 +32,7 @@ export class FileUploadService {
       },
     });
 
-    const key = `martins_xml_default_${folder}.xml`;
+    const key = `products_xml_${folder}.xml`;
 
     const params: S3.PutObjectRequest = {
       Body: Buffer.from(xml, 'utf8'),
@@ -41,7 +41,7 @@ export class FileUploadService {
       Bucket: AWS_S3_BUCKET_NAME,
       // ideal ser dinamico o nome da pasta por ambiente
 
-      Key: `${folder}/${key}`,
+      Key: `${folder}/${id}/${key}`,
       ContentEncoding: 'base64',
       ContentType: 'text/xml',
     };
