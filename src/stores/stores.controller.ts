@@ -22,6 +22,5 @@ export class StoreController {
   // if(!store)throw new Exception(404, "Loja não encontrada")
   // if(!store.active || !store.type...) throw new Exception(400, "Loja inativa")
   // this.productService.generateXmlForProducts(store)
-
   // incluir no product -- if(products.length === 0) throw new Exception(404, "No products for store")
 }
