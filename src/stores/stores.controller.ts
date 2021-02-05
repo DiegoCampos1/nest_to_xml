@@ -1,4 +1,11 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Put,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { StoreService } from './store.service';
 
@@ -11,7 +18,7 @@ export class StoreController {
   @Get()
   async findStoreActives() {
     this.logger.debug('findStoresActives');
-    return this.storeService.getActiveStores();
+    return await this.storeService.getActiveStores();
   }
 
   // stores/:idStore/products/xml;
@@ -23,4 +30,15 @@ export class StoreController {
   // if(!store.active || !store.type...) throw new Exception(400, "Loja inativa")
   // this.productService.generateXmlForProducts(store)
   // incluir no product -- if(products.length === 0) throw new Exception(404, "No products for store")
+
+  @Put(':idStore/products/xml')
+  async generateXmlByStoreId(@Param('idStore') idStore: number) {
+    this.logger.debug('generateXmlByStoreId');
+    try {
+      await this.storeService.generateXmlById(idStore);
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+    return `Xml gerado e salvo com sucesso`;
+  }
 }

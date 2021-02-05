@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from '../products/store.entity';
 import { StoreProps } from './interfaces/store';
-
+import { StoreNotFound } from './errors/storeNotFound.error';
+import { StoreNotActive } from './errors/storeNotActive.error';
+import { StoreNotOwnPlataform } from './errors/storeNotOwnPlataform.error';
 @Injectable()
 export class StoreService {
   constructor(
@@ -32,5 +34,28 @@ export class StoreService {
     );
     console.timeEnd('storeActives');
     return data;
+  }
+
+  async generateXmlById(idStore): Promise<StoreProps[]> {
+    const store = await this.storeRepository.findOne({
+      where: {
+        id: idStore,
+      },
+    });
+
+    if (!store) {
+      throw new StoreNotFound(idStore);
+    }
+
+    if (!store.status) {
+      throw new StoreNotActive(idStore);
+    }
+
+    if (store.type !== 1) {
+      throw new StoreNotOwnPlataform(idStore);
+    }
+
+    console.log(store);
+    return idStore;
   }
 }
