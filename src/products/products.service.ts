@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { StoreProps } from 'src/stores/interfaces/store';
 import * as builder from 'xmlbuilder';
 import { Product } from './interfaces/products';
 import { ProductStore } from './productStore.entity';
@@ -158,13 +159,12 @@ export class AppService {
     return productXmlItem;
   }
 
-  // DEFAULT TODOS OS PRODUTOS //
-  async xmlGeneratorProductsAllStores(mockUmuaramaDias): Promise<any> {
+  async xmlGeneratorProductsByStore(storeInfos: StoreProps): Promise<any> {
     console.time('productsFromActivesStores');
 
     const productsFromActivesStores = await this.xmlItemByStoreId(
-      mockUmuaramaDias.id,
-      mockUmuaramaDias.name,
+      storeInfos.id,
+      storeInfos.name,
     );
     console.log(
       `Memory Usage: productsFromActivesStores MB`,
