@@ -47,12 +47,6 @@ export class StoreService {
       },
     });
 
-    const product = await this.productStoreRepository.findOne({
-      where: {
-        storeId: idStore,
-      },
-    });
-
     if (!store) {
       throw new StoreNotFound(idStore);
     }
@@ -64,6 +58,12 @@ export class StoreService {
     if (store.type !== 1) {
       throw new StoreNotOwnPlataform(idStore);
     }
+
+    const product = await this.productStoreRepository.findOne({
+      where: {
+        storeId: idStore,
+      },
+    });
 
     if (!product) {
       throw new ProductNotFound(idStore);
