@@ -3,7 +3,7 @@ import { StoreController } from './stores.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Store } from '../products/store.entity';
 import { StoreService } from './store.service';
-import { AppService } from 'src/products/products.service';
+import { ProductService } from 'src/products/products.service';
 import { FileUploadService } from 'src/products/fileUpload.service';
 import { ProductStore } from 'src/products/productStore.entity';
 
@@ -13,6 +13,6 @@ import { ProductStore } from 'src/products/productStore.entity';
     TypeOrmModule.forFeature([Store, ProductStore]),
   ],
   controllers: [StoreController],
-  providers: [StoreService, AppService, FileUploadService],
+  providers: [StoreService, ProductService, FileUploadService],
 })
 export class StoresModule {}

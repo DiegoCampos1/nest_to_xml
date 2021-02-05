@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-//import { AppController } from './products.controller';
-import { AppService } from './products.service';
+import { ProductService } from './products.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductStore } from './productStore.entity';
 import { StoreService } from 'src/stores/store.service';
@@ -12,7 +11,6 @@ import { FileUploadService } from './fileUpload.service';
     TypeOrmModule.forRoot(),
     TypeOrmModule.forFeature([ProductStore, Store]),
   ],
-  //controllers: [AppController],
-  providers: [AppService, StoreService, FileUploadService],
+  providers: [ProductService, StoreService, FileUploadService],
 })
 export class XmlModule {}

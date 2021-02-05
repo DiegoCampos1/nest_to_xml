@@ -1,7 +1,7 @@
 import { Controller, Get, Logger, Param, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { FileUploadService } from 'src/products/fileUpload.service';
-import { AppService } from 'src/products/products.service';
+import { ProductService } from 'src/products/products.service';
 import { StoreService } from './store.service';
 
 @ApiTags('Stores')
@@ -10,7 +10,7 @@ export class StoreController {
   constructor(
     private readonly storeService: StoreService,
     private readonly fileUploadService: FileUploadService,
-    private readonly appService: AppService,
+    private readonly ProductService: ProductService,
   ) {}
   private readonly logger = new Logger(StoreService.name);
 
@@ -38,7 +38,7 @@ export class StoreController {
 
     const storeInfo = await this.storeService.getStoreInfo(idStore);
 
-    const productsXml = await this.appService.xmlGeneratorProductsByStore(
+    const productsXml = await this.ProductService.xmlGeneratorProductsByStore(
       storeInfo,
     );
 
