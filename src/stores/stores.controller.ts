@@ -19,7 +19,6 @@ export class StoreController {
     private readonly storeService: StoreService,
     private readonly fileUploadService: FileUploadService,
     private readonly appService: AppService,
-
   ) {}
   private readonly logger = new Logger(StoreService.name);
 
@@ -42,12 +41,8 @@ export class StoreController {
   @Put(':idStore/products/xml')
   async generateXmlByStoreId(@Param('idStore') idStore: number) {
     this.logger.debug('generateXmlByStoreId');
-    let storeInfo: StoreProps;
-    try {
-      storeInfo = await this.storeService.generateXmlById(idStore);
-    } catch (err) {
-      throw new BadRequestException(err.message);
-    }
+
+    const storeInfo = await this.storeService.getStoreInfo(idStore);
 
     const productsXml = await this.appService.xmlGeneratorProductsAllStores(
       storeInfo,
