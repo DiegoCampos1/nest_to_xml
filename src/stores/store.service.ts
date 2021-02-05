@@ -36,7 +36,7 @@ export class StoreService {
     return data;
   }
 
-  async generateXmlById(idStore): Promise<StoreProps[]> {
+  async generateXmlById(idStore): Promise<StoreProps> {
     const store = await this.storeRepository.findOne({
       where: {
         id: idStore,
@@ -55,7 +55,12 @@ export class StoreService {
       throw new StoreNotOwnPlataform(idStore);
     }
 
-    console.log(store);
-    return idStore;
+    const storeInfos = {
+      id: store.id,
+      name: store.name,
+      url: store.url,
+    };
+    
+    return storeInfos;
   }
 }

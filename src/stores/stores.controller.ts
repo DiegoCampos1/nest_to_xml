@@ -7,12 +7,20 @@ import {
   Put,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { FileUploadService } from 'src/products/fileUpload.service';
+import { AppService } from 'src/products/products.service';
+import { StoreProps } from './interfaces/store';
 import { StoreService } from './store.service';
 
 @ApiTags('Active Stores')
 @Controller('stores')
 export class StoreController {
-  constructor(private readonly storeService: StoreService) {}
+  constructor(
+    private readonly storeService: StoreService,
+    private readonly fileUploadService: FileUploadService,
+    private readonly appService: AppService,
+
+  ) {}
   private readonly logger = new Logger(StoreService.name);
 
   @Get()
@@ -34,11 +42,19 @@ export class StoreController {
   @Put(':idStore/products/xml')
   async generateXmlByStoreId(@Param('idStore') idStore: number) {
     this.logger.debug('generateXmlByStoreId');
+    let storeInfo: StoreProps;
     try {
-      await this.storeService.generateXmlById(idStore);
+      storeInfo = await this.storeService.generateXmlById(idStore);
     } catch (err) {
       throw new BadRequestException(err.message);
     }
-    return `Xml gerado e salvo com sucesso`;
+
+    const productsXml = await this.appService.xmlGeneratorProductsAllStores(
+      storeInfo,
+    );
+
+    await this.fileUploadService.uploadXml(productsXml, storeInfo.id);
+
+    return `Salvo xml com sucesso para a` + storeInfo;
   }
 }
