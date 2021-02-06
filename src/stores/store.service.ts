@@ -7,6 +7,7 @@ import { StoreNotFound } from './errors/storeNotFound.error';
 import { StoreNotActive } from './errors/storeNotActive.error';
 import { StoreNotOwnPlataform } from './errors/storeNotOwnPlataform.error';
 import { ProductNotFound } from './errors/productNotFound.error';
+
 @Injectable()
 export class StoreService {
   constructor(
@@ -15,7 +16,7 @@ export class StoreService {
     @InjectRepository(ProductStore)
     private readonly productStoreRepository,
   ) {}
-  // getActiveStores
+
   async getActiveStores(): Promise<StoreProps[]> {
     console.log('getActiveStores called');
     console.time('storeActives');
@@ -55,6 +56,7 @@ export class StoreService {
       throw new StoreNotActive(idStore);
     }
 
+    // criar enum para type
     if (store.type !== 1) {
       throw new StoreNotOwnPlataform(idStore);
     }
