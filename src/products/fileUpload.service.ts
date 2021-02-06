@@ -35,10 +35,8 @@ export class FileUploadService {
 
     const params: S3.PutObjectRequest = {
       Body: Buffer.from(xml, 'utf8'),
-      // Body: xml,
 
       Bucket: AWS_S3_BUCKET_NAME,
-      // ideal ser dinamico o nome da pasta por ambiente
 
       Key: `${id}/${key}`,
       ContentEncoding: 'base64',
