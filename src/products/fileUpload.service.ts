@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { S3 } from 'aws-sdk';
 
-interface Response {
+interface ResponseUpload {
   success: boolean;
   message: string;
 }
@@ -9,7 +9,7 @@ interface Response {
 export class FileUploadService {
   private readonly logger: Logger = new Logger(FileUploadService.name);
 
-  async uploadXml(xml: any, id: number): Promise<Response> {
+  async uploadXml(xml: any, id: number): Promise<ResponseUpload> {
     console.log('uploadXml called');
     console.time('uploadXml');
 
@@ -46,15 +46,15 @@ export class FileUploadService {
     return new Promise((resolve, reject) => {
       s3.putObject(params, (err) => {
         if (err) {
-          const response = {
+          const responseError = {
             success: false,
             message: `Erro ao salvar arquivo no s3`,
           };
 
           this.logger.error(err);
-          return reject(response);
+          return reject(responseError);
         }
-        const response = {
+        const responseSuccess = {
           success: true,
           message: `Arquivo salvo com sucesso: ${key}`,
         };
@@ -63,7 +63,7 @@ export class FileUploadService {
           (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
         );
         console.timeEnd('uploadXml');
-        return resolve(response);
+        return resolve(responseSuccess);
       });
     });
   }
