@@ -9,7 +9,7 @@ interface Response {
 export class FileUploadService {
   private readonly logger: Logger = new Logger(FileUploadService.name);
 
-  async uploadXml(xml: any, id): Promise<Response> {
+  async uploadXml(xml: any, id: number): Promise<Response> {
     console.log('uploadXml called');
     console.time('uploadXml');
 
@@ -17,8 +17,7 @@ export class FileUploadService {
       `Memory Usage: uploadXml MB`,
       (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
     );
-    const AWS_S3_BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
-    const folder = process.env.AWS_S3_FOLDER;
+    const AWS_S3_BUCKET_NAME = `${process.env.AWS_S3_BUCKET_NAME}-${process.env.AWS_S3_FOLDER}`;
 
     const s3 = new S3({
       maxRetries: 10,
@@ -32,7 +31,7 @@ export class FileUploadService {
       },
     });
 
-    const key = `products_xml_${folder}.xml`;
+    const key = `products.xml`;
 
     const params: S3.PutObjectRequest = {
       Body: Buffer.from(xml, 'utf8'),
@@ -41,7 +40,7 @@ export class FileUploadService {
       Bucket: AWS_S3_BUCKET_NAME,
       // ideal ser dinamico o nome da pasta por ambiente
 
-      Key: `${folder}/${id}/${key}`,
+      Key: `${id}/${key}`,
       ContentEncoding: 'base64',
       ContentType: 'text/xml',
     };
