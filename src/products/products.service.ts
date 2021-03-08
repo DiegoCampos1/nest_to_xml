@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { StoreProps } from 'src/stores/interfaces/store';
 import * as builder from 'xmlbuilder';
-import { Product } from './interfaces/interface';
+import { Product } from './interfaces/products';
 import { ProductStore } from './productStore.entity';
 
 @Injectable()
-export class AppService {
+export class ProductService {
   constructor(
     @InjectRepository(ProductStore)
     private readonly productStoreRepository,
   ) {}
 
-  async xmlGeneratorProductsByRedeId(storeId: any): Promise<any> {
+  async xmlItemByStoreId(storeId: string | number, storeName): Promise<any> {
+    console.log('xmlItemByStoreId called');
     const qb = await this.productStoreRepository
       .createQueryBuilder('ps')
       .innerJoin('stores', 's', 'ps.store_id = s.id')
@@ -23,6 +25,7 @@ export class AppService {
       )
       .select('ps.id', 'id')
       .addSelect('ps.stock', 'stock')
+
       .addSelect('p.image', 'image')
       .addSelect('s.url', 'urlStore')
       .addSelect('s.type', 'typeStore')
@@ -61,13 +64,17 @@ export class AppService {
       .addSelect('ps.indaltetq', 'indaltetq')
       .addSelect('ps.ctr', 'ctr')
       .addSelect('ps.desprdloja', 'desprdloja')
+      .addSelect('p.codundvnd', 'salesUnitCode')
+      .addSelect('p.qdemnmmpl', 'multipleSale')
+      .addSelect('p.desundvnd', 'salesUnit')
+      .addSelect('p.conversion', 'multiple')
       .andWhere('ps.store_id = :storeId', { storeId })
       .andWhere('ps.status = 1')
       .andWhere('s.type = 1')
       .andWhere(
         'NOT EXISTS (SELECT 1 FROM blacklist_product AS bp WHERE bp.store_id = ps.store_id AND (p.id = ANY(bp.products_id) OR (p."CODSECCSM" = bp.code_session  AND p."CODCTGCSM" = bp.code_category AND p."CODSUBCTGCSM" = bp.code_subcategory) OR (p."CODSECCSM" = bp.code_session AND p."CODCTGCSM" = bp.code_category AND bp.code_subcategory IS NULL) OR (p."CODSECCSM" = bp.code_session AND bp.code_category IS NULL AND bp.code_subcategory IS NULL)) AND bp.status = 1 AND (CURRENT_TIMESTAMP BETWEEN bp.start_date AND bp.end_date OR bp.start_date IS NULL))',
       )
-      // A ordenação está identica a ordenação dos produtops em nosso site, mas caso a mesma não seja necessária podemos remover da linha 87 a 97:
+      // A ordenação está identica a ordenação dos produtops em nosso site, mas caso a mesma não seja necessária podemos remover
       .orderBy('p.name', 'ASC')
       .addOrderBy(
         '(CASE WHEN "p"."image" = 1 AND "ps"."rupture" = 0 AND ("ps"."stock" > 0 OR "ps"."indaltetq" = 1 OR (CASE WHEN (EXISTS (SELECT 1 FROM exception_products ep2 INNER JOIN stock_exception AS se ON (se.id = ep2.stock_exception_id) WHERE (("p"."id" = ANY("ep2"."products_id")) OR ("p"."id" = ep2.product_id) OR (p."CODSECCSM" = ep2."CODSECCSM" AND p."CODCTGCSM" = ep2."CODCTGCSM" AND p."CODSUBCTGCSM" = ep2."CODSUBCTGCSM") OR (p."CODSECCSM" = ep2."CODSECCSM" AND p."CODCTGCSM" = ep2."CODCTGCSM" AND ep2."CODSUBCTGCSM" IS NULL) OR (p."CODSECCSM" = ep2."CODSECCSM" AND ep2."CODCTGCSM" IS NULL AND ep2."CODSUBCTGCSM" IS NULL)) AND ep2.status = 1 AND se.status = 1 AND se.store_id = "s"."id" )) THEN 1 ELSE 0 END) = 1) THEN 1 ELSE 0 END)',
@@ -78,6 +85,7 @@ export class AppService {
         'DESC',
       )
       .addOrderBy('p.image', 'DESC')
+
       .addOrderBy('ps.ctr', 'DESC');
 
     const data = await qb.getRawMany();
@@ -107,6 +115,7 @@ export class AppService {
 
     const productXmlItem = data.map((product: Product) => {
       const itemProduct = {
+        'g:item_group_id': `${product.id}`,
         'g:id': `${product.id}`,
         title: `${product.productName}`,
         description: `${product.desprdloja ?? product.defaultDescription}`,
@@ -131,28 +140,75 @@ export class AppService {
         'c:tags': {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
+        'c:specs': {
+          'c:code_product': `${product.codeProduct}`,
+          'c:spec_sales_unit_code': `${product.salesUnitCode}`,
+          'c:spec_sales_unit': `${product.salesUnit}`,
+          'c:spec_minimum_quantity_multiple': `${
+            product.multipleSale ? product.multipleSale : null
+          }`,
+          'c:spec_conversion': `${product.multiple ? product.multiple : null}`,
+        },
+        'c:details': {
+          'c:detail_name_store': `${storeName}`,
+          'c:detail_id_store': `${storeId}`,
+        },
       };
       return itemProduct;
     });
+    return productXmlItem;
+  }
 
+  async xmlGeneratorProductsByStore(storeInfos: StoreProps): Promise<any> {
+    console.time('productsFromActivesStores');
+
+    const productsFromActivesStores = await this.xmlItemByStoreId(
+      storeInfos.id,
+      storeInfos.name,
+    );
+    console.log(
+      `Memory Usage: productsFromActivesStores MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('productsFromActivesStores');
+
+    console.time('xmlProductsStore');
     const xmlProductsStore = {
       rss: {
         '@xmlns:g': 'http://base.google.com/ns/1.0',
+        '@xmlns:c': 'http://base.google.com/ns/1.0',
         '@version': '2.0',
-        chanel: {
-          title: 'Martins store products',
-          link: `https://loja.smartsupermercados.com.br${data[0].urlStore}`,
-          description: 'This is a Feed with recommended fields',
-          item: productXmlItem,
-        },
+        item: await productsFromActivesStores,
       },
     };
+    console.log(
+      `Memory Usage: xmlProductsStore MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('xmlProductsStore');
+
+    console.time('feed');
 
     const feed = builder.create(xmlProductsStore, {
       encoding: 'utf-8',
       standalone: true,
     });
 
-    return feed.end({ pretty: true });
+    console.log(
+      `Memory Usage: feed MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('feed');
+
+    console.log('feedEndPretty');
+    console.time('feedEndPretty');
+    const feedEndPretty = feed.end({ pretty: false });
+    console.log(
+      `Memory Usage: feedEndPretty MB`,
+      (Math.round(process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
+    );
+    console.timeEnd('feedEndPretty');
+
+    return feedEndPretty;
   }
 }

@@ -1,0 +1,72 @@
+trigger:
+  branches:
+    include:
+    - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: IMAGE
+    value: linx-api
+  - name: NODE_ENV
+    value: development
+  - name: STAGE
+    value: dev
+  - group: smart-linx
+  - group: aws-credentials  
+
+steps:
+- task: NodeTool@0 
+  inputs:
+    versionSpec: '12.x'
+
+- script: |
+    echo $(Build.SourceVersion) | sed -r 's/^(.{8}).*/\1/' > BUILD
+    aws ecr describe-repositories | jq ".repositories[].repositoryUri" -r | grep redesmart-$(IMAGE)-$(STAGE) > REPO_NAME
+  displayName: 'Setup Repo Name And Version Build'
+  env:
+    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+    AWS_REGION: $(AWS_REGION)
+    
+- script: |
+    bash scripts/environment.sh 
+    cat .env
+  displayName: 'Configure Environment'
+  env:
+    DB_PASS: $(DB_PASSWD)
+    DB_USER: $(DB_USER)
+    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+    AWS_REGION: $(AWS_REGION)
+
+
+- script: |
+    docker build -t $(cat REPO_NAME):$(cat BUILD) \
+      --build-arg NODE_ENV=$(NODE_ENV) \
+      .
+  displayName: 'Build image'
+
+- script: |
+    export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq ".Account" -r)
+    aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.$(AWS_REGION).amazonaws.com
+    docker tag $(cat REPO_NAME):$(cat BUILD) $(cat REPO_NAME):latest
+    docker push $(cat REPO_NAME):$(cat BUILD)
+    docker push $(cat REPO_NAME):latest
+  displayName: 'Push ECR'
+  env:
+    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+    AWS_REGION: $(AWS_REGION) 
+
+- script: |
+    export ECS_CLUSTER_NAME="redesmart-ecs-cluster-$(STAGE)"
+    export ECS_SERVICE_NAME="redesmart-$(IMAGE)-$(STAGE)"
+    
+    aws ecs update-service --cluster "${ECS_CLUSTER_NAME}" --service "${ECS_SERVICE_NAME}" --force-new-deployment --region $(AWS_REGION) > /dev/null
+  displayName: 'Deploy ECS service and force new task'
+  env:
+    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+    AWS_REGION: $(AWS_REGION) 
