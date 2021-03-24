@@ -115,7 +115,7 @@ export class ProductService {
 
     const productXmlItem = data.map((product: Product) => {
       const itemProduct = {
-        'g:item_group_id': `${product.id}`,
+        'g:item_group_id': `${product.codeProduct}`,
         'g:id': `${product.id}`,
         title: `${product.productName}`,
         description: `${product.desprdloja ?? product.defaultDescription}`,
@@ -141,7 +141,6 @@ export class ProductService {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
         'c:specs': {
-          'c:code_product': `${product.codeProduct}`,
           'c:spec_sales_unit_code': `${product.salesUnitCode}`,
           'c:spec_sales_unit': `${product.salesUnit}`,
           'c:spec_minimum_quantity_multiple': `${
@@ -152,6 +151,7 @@ export class ProductService {
         'c:details': {
           'c:detail_name_store': `${storeName}`,
           'c:detail_id_store': `${storeId}`,
+          'c:detail_sem_foto': `${product.image ? false : true}`,
         },
       };
       return itemProduct;
