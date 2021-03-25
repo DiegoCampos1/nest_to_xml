@@ -141,7 +141,6 @@ export class ProductService {
           'c:tag': `${productAvaiblePromotion(product.promotion)}`,
         },
         'c:specs': {
-          'c:code_product': `${product.codeProduct}`,
           'c:spec_sales_unit_code': `${product.salesUnitCode}`,
           'c:spec_sales_unit': `${product.salesUnit}`,
           'c:spec_minimum_quantity_multiple': `${
