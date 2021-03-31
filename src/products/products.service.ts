@@ -111,9 +111,6 @@ export class ProductService {
         ? `https://imgprd.smartsupermercados.com.br/products/${codeProduct}/01_${codeProduct}_01.jpg`
         : `http://redesmart-source.s3.amazonaws.com/no-image.svg`;
 
-    const productAvaiblePromotion = (promotion: boolean) =>
-      promotion ? 'Promoção' : 'Sem promoção';
-
     const productXmlItem = data.map((product: Product) => {
       const itemProduct = {
         'g:item_group_id': `${product.codeProduct}`,
@@ -134,13 +131,10 @@ export class ProductService {
           product.indaltetq,
           product.id,
         )}`,
-        'g:sale_price': `${product.price} BRL`,
-        'g:price': `${product.pricePromotion} BRL`,
+        'g:sale_price': `${product.pricePromotion} BRL`,
+        'g:price': `${product.price} BRL`,
         'g:gtin': `${product.ean}`,
         'g:brand': `${product.desmrcctl}`,
-        'c:tags': {
-          'c:tag': `${productAvaiblePromotion(product.promotion)}`,
-        },
         'c:specs': {
           'c:spec_sales_unit_code': `${product.salesUnitCode}`,
           'c:spec_sales_unit': `${product.salesUnit}`,
