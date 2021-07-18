@@ -25,10 +25,10 @@ export class FileUploadService {
         base: 150,
       },
       params: { AWS_S3_BUCKET_NAME },
-      // credentials: {
-      //   accessKeyId: process.env.AWS_ACCESS_ID,
-      //   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      // },
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      },
     });
 
     const key = `products.xml`;

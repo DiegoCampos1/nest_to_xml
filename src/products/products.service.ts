@@ -119,6 +119,7 @@ export class ProductService {
         description: `${product.desprdloja ?? product.defaultDescription}`,
         'g:google_product_category': `${product.nomseccsm} > ${product.desctgcsm}`,
         'g:product_type': `${product.nomseccsm} > ${product.desctgcsm} > ${product.dessubctgprdcsm}`,
+        // linx.dev.smartechnology.link/
         link: `https://loja.smartsupermercados.com.br${product.urlStore}/produto/${product.codeProduct}`,
         'g:image_link': `${productImageAvaible(
           product.image,
